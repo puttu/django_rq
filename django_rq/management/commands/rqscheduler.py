@@ -6,6 +6,9 @@ from django.utils.version import get_version
 from django_rq import get_scheduler
 
 
+SCHEDULER_INTERVAL_SECONDS = 30
+
+
 class Command(BaseCommand):
     """
     Runs RQ scheduler
@@ -33,4 +36,14 @@ class Command(BaseCommand):
 
         scheduler = get_scheduler(
             name=options.get('queue'), interval=options.get('interval'))
-        scheduler.run()
+
+        self.stdout.write("Waiting to acquire lock...")
+        while True:
+            try:
+                scheduler.run()
+                break
+            except ValueError, exc:
+                if exc.message == "There's already an active RQ scheduler":
+                    time.sleep(SCHEDULER_INTERVAL_SECONDS)
+                else:
+                    raise
