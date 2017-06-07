@@ -44,7 +44,7 @@ class Command(BaseCommand):
                 scheduler.run()
                 break
             except ValueError as exc:
-                if exc.message == "There's already an active RQ scheduler":
+                if str(exc) == "There's already an active RQ scheduler":
                     time.sleep(SCHEDULER_INTERVAL_SECONDS)
                 else:
                     raise
