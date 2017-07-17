@@ -38,13 +38,14 @@ class Command(BaseCommand):
         scheduler = get_scheduler(
             name=options.get('queue'), interval=options.get('interval'))
 
-        self.stdout.write("Waiting to acquire lock...")
         while True:
             try:
+                self.stdout.write("Initiating RQ scheduler")
                 scheduler.run()
                 break
             except ValueError as exc:
                 if str(exc) == "There's already an active RQ scheduler":
+                    self.stdout.write("Another scheduler is active. Waiting {} seconds to acquire lock...".format(SCHEDULER_INTERVAL_SECONDS))
                     time.sleep(SCHEDULER_INTERVAL_SECONDS)
                 else:
                     raise
